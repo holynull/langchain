@@ -1,6 +1,6 @@
 import logging
 from string import Template
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,18 @@ RETRY_TIMES = 3
 
 
 class NebulaGraph:
-    """NebulaGraph wrapper for graph operations
+    """NebulaGraph wrapper for graph operations.
+
     NebulaGraph inherits methods from Neo4jGraph to bring ease to the user space.
+
+    *Security note*: Make sure that the database connection uses credentials
+        that are narrowly-scoped to only include necessary permissions.
+        Failure to do so may result in data corruption or loss, since the calling
+        code may attempt commands that would result in deletion, mutation
+        of data if appropriately prompted or reading sensitive data if such
+        data is present in the database.
+        The best way to guard against such negative outcomes is to (as appropriate)
+        limit the permissions granted to the credentials used with this tool.
     """
 
     def __init__(
@@ -106,11 +116,12 @@ class NebulaGraph:
         """Returns the schema of the NebulaGraph database"""
         return self.schema
 
-    def execute(self, query: str, params: dict = {}, retry: int = 0) -> Any:
+    def execute(self, query: str, params: Optional[dict] = None, retry: int = 0) -> Any:
         """Query NebulaGraph database."""
         from nebula3.Exception import IOErrorException, NoValidSessionException
         from nebula3.fbthrift.transport.TTransport import TTransportException
 
+        params = params or {}
         try:
             result = self.session_pool.execute_parameter(query, params)
             if not result.is_succeeded():

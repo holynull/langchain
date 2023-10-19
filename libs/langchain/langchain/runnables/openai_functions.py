@@ -4,7 +4,7 @@ from typing import Any, Callable, List, Mapping, Optional, Union
 from typing_extensions import TypedDict
 
 from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
-from langchain.schema.output import ChatGeneration
+from langchain.schema.messages import BaseMessage
 from langchain.schema.runnable import RouterRunnable, Runnable, RunnableBinding
 
 
@@ -19,7 +19,7 @@ class OpenAIFunction(TypedDict):
     """The parameters to the function."""
 
 
-class OpenAIFunctionsRouter(RunnableBinding[ChatGeneration, Any]):
+class OpenAIFunctionsRouter(RunnableBinding[BaseMessage, Any]):
     """A runnable that routes to the selected function."""
 
     functions: Optional[List[OpenAIFunction]]
@@ -38,7 +38,7 @@ class OpenAIFunctionsRouter(RunnableBinding[ChatGeneration, Any]):
         if functions is not None:
             assert len(functions) == len(runnables)
             assert all(func["name"] in runnables for func in functions)
-        router: Runnable[ChatGeneration, Any] = (
+        router = (
             JsonOutputFunctionsParser(args_only=False)
             | {"key": itemgetter("name"), "input": itemgetter("arguments")}
             | RouterRunnable(runnables)

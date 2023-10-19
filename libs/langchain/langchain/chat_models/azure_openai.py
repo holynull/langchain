@@ -4,9 +4,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Mapping
 
-from pydantic_v1 import root_validator
-
 from langchain.chat_models.openai import ChatOpenAI
+from langchain.pydantic_v1 import root_validator
 from langchain.schema import ChatResult
 from langchain.utils import get_from_dict_or_env
 
@@ -141,6 +140,13 @@ class AzureChatOpenAI(ChatOpenAI):
     @property
     def _llm_type(self) -> str:
         return "azure-openai-chat"
+
+    @property
+    def lc_attributes(self) -> Dict[str, Any]:
+        return {
+            "openai_api_type": self.openai_api_type,
+            "openai_api_version": self.openai_api_version,
+        }
 
     def _create_chat_result(self, response: Mapping[str, Any]) -> ChatResult:
         for res in response["choices"]:

@@ -74,7 +74,7 @@ class UnstructuredBaseLoader(BaseLoader, ABC):
 
     def _post_process_elements(self, elements: list) -> list:
         """Applies post processing functions to extracted unstructured elements.
-        Post processing functions are Element -> Element callables are passed
+        Post processing functions are str -> str callables are passed
         in using the post_processors kwarg when the loader is instantiated."""
         for element in elements:
             for post_processor in self.post_processors:
@@ -84,6 +84,7 @@ class UnstructuredBaseLoader(BaseLoader, ABC):
     def load(self) -> List[Document]:
         """Load file."""
         elements = self._get_elements()
+        self._post_process_elements(elements)
         if self.mode == "elements":
             docs: List[Document] = list()
             for element in elements:
@@ -252,10 +253,7 @@ class UnstructuredAPIFileLoader(UnstructuredFileLoader):
     ):
         """Initialize with file path."""
 
-        if isinstance(file_path, str):
-            validate_unstructured_version(min_unstructured_version="0.6.2")
-        else:
-            validate_unstructured_version(min_unstructured_version="0.6.3")
+        validate_unstructured_version(min_unstructured_version="0.10.15")
 
         self.url = url
         self.api_key = api_key
